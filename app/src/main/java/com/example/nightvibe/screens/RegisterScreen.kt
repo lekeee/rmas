@@ -1,6 +1,7 @@
 package com.example.nightvibe.screens
 
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,19 +14,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Login
 import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.material.icons.outlined.MailOutline
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Phone
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.nightvibe.exceptions.AuthenticationExceptions
 import com.example.nightvibe.navigation.Routes
+import com.example.nightvibe.repositories.Resource
 import com.example.nightvibe.screens.components.GreyText
 import com.example.nightvibe.screens.components.Heading1Text
 import com.example.nightvibe.screens.components.LabelForInput
@@ -34,9 +41,10 @@ import com.example.nightvibe.screens.components.PasswordInput
 import com.example.nightvibe.screens.components.TextInput
 import com.example.nightvibe.screens.components.UploadIcon
 import com.example.nightvibe.screens.components.customClickableText
+import com.example.nightvibe.viewmodels.AuthViewModel
 
 @Composable
-fun RegisterScreen(navController: NavController?){
+fun RegisterScreen(navController: NavController?, viewModel: AuthViewModel){
     val email = remember { mutableStateOf("") }
     val password = remember { mutableStateOf("") }
     val fullName = remember { mutableStateOf("") }
@@ -59,6 +67,8 @@ fun RegisterScreen(navController: NavController?){
     val buttonIsEnabled = remember { mutableStateOf(true) }
     val isLoading = remember { mutableStateOf(false) }
 
+    val registerFlow = viewModel.registerFlow.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -77,7 +87,7 @@ fun RegisterScreen(navController: NavController?){
             GreyText(textValue = "Kreiraj nalog i kreni")
             Spacer(modifier = Modifier.height(20.dp))
             LabelForInput(textValue = "Vasa slika")
-            UploadIcon()
+            UploadIcon(profileImage, isImageError)
             Spacer(modifier = Modifier.height(10.dp))
             LabelForInput(textValue = "Ime i Prezime")
             Spacer(modifier = Modifier.height(10.dp))
@@ -124,12 +134,101 @@ fun RegisterScreen(navController: NavController?){
             Spacer(modifier = Modifier.height(10.dp))
             LoginRegisterButton(
                 buttonText = "Registrujte se",
+                icon = Icons.Filled.Login,
                 isEnabled = buttonIsEnabled,
-                isLoading = isLoading) {
-            }
+                isLoading = isLoading,
+                onClick = {
+                    isImageError.value = false
+                    isEmailError.value = false
+                    isPasswordError.value = false
+                    isImageError.value = false
+                    isFullNameError.value = false
+                    isPhoneNumberError.value = false
+                    isError.value = false
+                    isLoading.value = true
+
+                    if(profileImage.value == Uri.EMPTY && profileImage.value != null){
+                        isImageError.value = true
+                        isLoading.value = false
+                    }else if(fullName.value.isEmpty()){
+                        isFullNameError.value = true
+                        isLoading.value = false
+                    }else if(email.value.isEmpty()){
+                        isEmailError.value = true
+                        isLoading.value = false
+                    }else if(phoneNumber.value.isEmpty()){
+                        isPhoneNumberError.value = true
+                        isLoading.value = false
+                    }else if(password.value.isEmpty()){
+                        isPasswordError.value = true
+                        isLoading.value = false
+                    }else {
+                        viewModel.register(
+                            profileImage = profileImage.value,
+                            fullName = fullName.value,
+                            email = email.value,
+                            phoneNumber = phoneNumber.value,
+                            password = password.value
+                        )
+                    }
+                }
+            )
+            Spacer(modifier = Modifier.height(10.dp))
             customClickableText(firstText = "Vec imate nalog? ", secondText = "Prijavi se", onClick = {
                 navController?.navigate(Routes.loginScreen)
             })
+
+            registerFlow.value.let {
+                when (it) {
+                    is Resource.Failure -> {
+                        isLoading.value = false
+                        Log.d("Error", it.exception.message.toString())
+
+                        when (it.exception.message.toString()) {
+                            AuthenticationExceptions.emptyFields -> {
+                                isEmailError.value = true
+                                isPasswordError.value = true
+                            }
+
+                            AuthenticationExceptions.badlyEmailFormat -> {
+                                isEmailError.value = true
+                                emailErrorText.value = "Nevalidan format email adrese"
+                            }
+
+                            AuthenticationExceptions.invalidCredential -> {
+                                isError.value = true
+                                errorText.value = "Nesipravni podaci koje ste uneli"
+                            }
+
+                            AuthenticationExceptions.shortPassword -> {
+                                isPasswordError.value = true
+                                passwordErrorText.value = "Previse kratka lozinka (min = 6)"
+                            }
+
+                            AuthenticationExceptions.emailUsed -> {
+                                isError.value = true
+                                errorText.value = "Uneta email adresa je vec kreiran nalog"
+                            }
+
+                            else -> {}
+                        }
+                    }
+                    is Resource.Success -> {
+                        isLoading.value = false
+                        LaunchedEffect(Unit) {
+                            navController?.navigate(Routes.indexScreen) {
+                                popUpTo(Routes.indexScreen) {
+                                    inclusive = true
+                                }
+                            }
+                        }
+                    }
+                    is Resource.loading -> {
+
+                    }
+                    null -> Log.d("Test", "Test")
+                }
+            }
         }
     }
 }

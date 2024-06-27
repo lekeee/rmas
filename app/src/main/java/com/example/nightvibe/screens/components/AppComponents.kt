@@ -1,12 +1,22 @@
 package com.example.nightvibe.screens.components
 
+import android.net.Uri
+import android.util.Log
+import android.widget.Space
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +26,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -32,9 +43,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +57,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.nightvibe.R
 import com.example.nightvibe.ui.theme.buttonDisabledColor
 import com.example.nightvibe.ui.theme.greyTextColor
@@ -101,19 +115,93 @@ fun NightOutImage(){
 }
 
 @Composable
-fun UploadIcon(){
-    Box(modifier = Modifier
-        .fillMaxWidth()
-        .padding(20.dp), contentAlignment = Alignment.Center){
-        Image(painter = painterResource(id = R.drawable.plus),
-            contentDescription = "Login Image",
-            modifier = Modifier
-                .width(100.dp)
-                .height(100.dp)
-        )
+fun UploadIcon(
+    selectedImageUri: MutableState<Uri?>,
+    isError: MutableState<Boolean>
+
+) {
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            selectedImageUri.value = uri
+        }
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(140.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        if (selectedImageUri.value == Uri.EMPTY || selectedImageUri.value == null) {
+            Image(
+                painter = painterResource(id = R.drawable.plus),
+                contentDescription = "Profile Image",
+                modifier = Modifier
+                    .size(140.dp)
+                    .border(
+                        if (isError.value) BorderStroke(2.dp, Color.Red) else BorderStroke(
+                            0.dp,
+                            Color.Transparent
+                        )
+                    )
+                    .clip(RoundedCornerShape(70.dp)) // 50% border radius
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        singlePhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+            )
+        } else {
+            selectedImageUri.value?.let { uri ->
+                Image(
+                    painter = painterResource(id = R.drawable.plus),
+                    contentDescription = "Profile Image",
+                    modifier = Modifier
+                        .size(140.dp)
+                        .border(
+                            if (isError.value) BorderStroke(2.dp, Color.Red) else BorderStroke(
+                                0.dp,
+                                Color.Transparent
+                            )
+                        )
+                        .clip(RoundedCornerShape(70.dp)) // 50% border radius
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        }
+                )
+
+                AsyncImage(
+                    model = uri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(140.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(Color.LightGray)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
     }
 }
-
 @Composable
 fun TextInput(
     isEmail: Boolean,
@@ -271,42 +359,56 @@ fun PasswordInput(
 @Composable
 fun LoginRegisterButton(
     buttonText: String,
+    icon: ImageVector,
     isEnabled: MutableState<Boolean>,
     isLoading: MutableState<Boolean>,
     onClick: () -> Unit
 ){
     Button(
         onClick = onClick,
-        modifier = Modifier.padding(vertical = 2.dp)
-            .height(50.dp). shadow(6.dp, shape = RoundedCornerShape(10.dp)),
+        modifier = Modifier
+            .padding(vertical = 2.dp)
+            .height(50.dp)
+            .border( 2.dp, mainColor, RoundedCornerShape(10.dp))
+        ,
         colors = ButtonDefaults.buttonColors(
-            containerColor = mainColor,
-            contentColor = Color.Black,
+            containerColor = Color.White,
+            contentColor = mainColor,
             disabledContainerColor = buttonDisabledColor,
             disabledContentColor = Color.White
         ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(10.dp),
         enabled = isEnabled.value
 
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            if (isLoading.value) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    color = Color.White,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Text(
-                    text = buttonText,
-                    style = TextStyle(
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+            if(!isLoading.value){
+                Icon(imageVector = icon, contentDescription = null)
+                Spacer(modifier = Modifier.width(10.dp))
+            }
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxHeight()
+            ) {
+                if (isLoading.value) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        color = mainColor,
+                        strokeWidth = 2.dp
                     )
-                )
+                } else {
+                    Text(
+                        text = buttonText,
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    )
+                }
             }
         }
     }
@@ -338,6 +440,25 @@ fun customClickableText(
             style = TextStyle(
                 fontSize = 12.sp,
                 color = mainColor
+            )
+        )
+    }
+}
+
+@Composable
+fun customErrorContainer(
+    errorText: String
+){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(50.dp),
+        contentAlignment = Alignment.Center
+    ){
+        Text(
+            text = errorText,
+            style = TextStyle(
+                fontWeight = FontWeight.Bold,
+                color = Color.Red
             )
         )
     }

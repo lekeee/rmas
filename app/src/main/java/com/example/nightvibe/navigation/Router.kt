@@ -7,19 +7,20 @@ import androidx.navigation.compose.rememberNavController
 import com.example.nightvibe.screens.IndexScreen
 import com.example.nightvibe.screens.LoginScreen
 import com.example.nightvibe.screens.RegisterScreen
+import com.example.nightvibe.viewmodels.AuthViewModel
 
 @Composable
-fun Router(){
+fun Router(authVM : AuthViewModel){
     val navController = rememberNavController();
     NavHost(navController = navController, startDestination = Routes.loginScreen){
         composable(Routes.loginScreen){
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController, viewModel = authVM)
         }
         composable(Routes.registerScreen){
-            RegisterScreen(navController = navController)
+            RegisterScreen(navController = navController, viewModel = authVM)
         }
         composable(Routes.indexScreen){
-            IndexScreen(navController = navController)
+            IndexScreen(navController = navController, viewModel = authVM)
         }
     }
 }
