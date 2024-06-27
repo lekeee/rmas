@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.nightvibe.screens.IndexScreen
 import com.example.nightvibe.screens.LoginScreen
 import com.example.nightvibe.screens.RegisterScreen
 
@@ -16,6 +17,9 @@ fun Router(){
         }
         composable(Routes.registerScreen){
             RegisterScreen(navController = navController)
+        }
+        composable(Routes.indexScreen){
+            IndexScreen(navController = navController)
         }
     }
 }

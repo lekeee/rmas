@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.nightvibe.navigation.Routes
 import com.example.nightvibe.screens.components.GreyText
 import com.example.nightvibe.screens.components.Heading1Text
 import com.example.nightvibe.screens.components.LabelForInput
@@ -32,6 +33,7 @@ import com.example.nightvibe.screens.components.LoginRegisterButton
 import com.example.nightvibe.screens.components.PasswordInput
 import com.example.nightvibe.screens.components.TextInput
 import com.example.nightvibe.screens.components.UploadIcon
+import com.example.nightvibe.screens.components.customClickableText
 
 @Composable
 fun RegisterScreen(navController: NavController?){
@@ -124,14 +126,10 @@ fun RegisterScreen(navController: NavController?){
                 buttonText = "Registrujte se",
                 isEnabled = buttonIsEnabled,
                 isLoading = isLoading) {
-                
             }
+            customClickableText(firstText = "Vec imate nalog? ", secondText = "Prijavi se", onClick = {
+                navController?.navigate(Routes.loginScreen)
+            })
         }
     }
-}
-
-@Preview
-@Composable
-fun RegisterScreenPreview(){
-    RegisterScreen(navController = null)
 }

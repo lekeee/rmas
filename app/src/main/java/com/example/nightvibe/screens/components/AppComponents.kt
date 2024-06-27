@@ -3,7 +3,10 @@ package com.example.nightvibe.screens.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -306,5 +309,36 @@ fun LoginRegisterButton(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun customClickableText(
+    firstText: String,
+    secondText: String,
+    onClick: () -> Unit
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(text = firstText,
+            style = TextStyle(
+                fontSize = 12.sp
+            )
+        )
+        Text(
+            text = secondText,
+            modifier = Modifier
+                .clickable {
+                    onClick()
+                }
+                .padding(start = 4.dp),
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = mainColor
+            )
+        )
     }
 }
