@@ -1,7 +1,7 @@
 package com.example.nightvibe.repositories
 
 import android.net.Uri
-import com.example.nightvibe.User
+import com.example.nightvibe.models.User
 import com.example.nightvibe.services.DatabaseService
 import com.example.nightvibe.services.StorageService
 import com.google.firebase.auth.FirebaseAuth

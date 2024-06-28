@@ -1,4 +1,4 @@
-package com.example.nightvibe
+package com.example.nightvibe.models
 
 import com.google.firebase.firestore.DocumentId
 

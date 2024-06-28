@@ -1,6 +1,6 @@
 package com.example.nightvibe.services
 
-import com.example.nightvibe.User
+import com.example.nightvibe.models.User
 import com.example.nightvibe.repositories.Resource
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await

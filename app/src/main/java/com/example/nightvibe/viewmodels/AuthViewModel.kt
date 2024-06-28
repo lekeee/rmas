@@ -4,7 +4,7 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.example.nightvibe.User
+import com.example.nightvibe.models.User
 import com.example.nightvibe.repositories.AuthRepositoryImplementation
 import com.example.nightvibe.repositories.Resource
 import com.google.firebase.auth.FirebaseUser
