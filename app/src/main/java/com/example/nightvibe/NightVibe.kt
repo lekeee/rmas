@@ -16,10 +16,11 @@ import androidx.core.app.ActivityCompat
 import com.example.nightvibe.navigation.Router
 import com.example.nightvibe.services.LocationService
 import com.example.nightvibe.viewmodels.AuthViewModel
+import com.example.nightvibe.viewmodels.PlaceViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun NightVibe(authViewModel: AuthViewModel){
+fun NightVibe(authViewModel: AuthViewModel, placeViewModel: PlaceViewModel){
 
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
@@ -57,6 +58,6 @@ fun NightVibe(authViewModel: AuthViewModel){
     }
 
     Surface(modifier = Modifier.fillMaxSize()){
-        Router(authVM = authViewModel)
+        Router(authVM = authViewModel, placeVM = placeViewModel)
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,9 +26,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddAPhoto
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -38,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -67,6 +72,7 @@ import com.example.nightvibe.ui.theme.greyTextColor
 import com.example.nightvibe.ui.theme.mainColor
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.FeatureClickEvent
 
 @Composable
 fun Heading1Text(textValue: String){
@@ -374,7 +380,7 @@ fun LoginRegisterButton(
         modifier = Modifier
             .padding(vertical = 2.dp)
             .height(50.dp)
-            .border( 2.dp, mainColor, RoundedCornerShape(10.dp))
+            .border(2.dp, mainColor, RoundedCornerShape(10.dp))
         ,
         colors = ButtonDefaults.buttonColors(
             containerColor = Color.White,
@@ -487,4 +493,283 @@ fun myPositionIndicator(
     val canvas = android.graphics.Canvas(bm)
     drawable.draw(canvas)
     return BitmapDescriptorFactory.fromBitmap(bm)
+}
+
+@Composable
+fun ImageLogo(
+    selectedImageUri: MutableState<Uri?>
+){
+    val singlePhotoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            selectedImageUri.value = uri
+        }
+    )
+
+    val interactionSource = remember { MutableInteractionSource() }
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .height(200.dp)
+        .border(
+            1.dp,
+            Color.Transparent,
+            shape = RoundedCornerShape(20.dp)
+        ),
+        contentAlignment = Alignment.Center,
+    ){
+        if (selectedImageUri.value == Uri.EMPTY || selectedImageUri.value == null) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable(
+                        interactionSource = interactionSource,
+                        indication = null
+                    ) {
+                        singlePhotoPickerLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    }
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.image_upload),
+                    modifier = Modifier
+                        .width(100.dp)
+                        .height(100.dp),
+                    contentDescription = ""
+                )
+                Text(text = "Dodaj logo")
+            }
+        }else{
+            selectedImageUri.value?.let { uri ->
+                AsyncImage(
+                    model = uri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(150.dp)
+                        .background(Color.LightGray)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+                            singlePhotoPickerLauncher.launch(
+                                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                    contentScale = ContentScale.Crop
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun GalleryForPlace(
+    selectedImages: MutableState<List<Uri>>
+) {
+    val pickImagesLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetMultipleContents()
+    ) { uris ->
+            selectedImages.value += uris
+    }
+
+    LazyRow {
+        if (selectedImages.value.size < 4) {
+            item {
+                Box(
+                    modifier = Modifier
+                        .padding(4.dp)
+                        .width(100.dp)
+                        .height(100.dp)
+                        .border(
+                            1.dp,
+                            mainColor,
+                            shape = RoundedCornerShape(10.dp),
+                        )
+                        .clickable { pickImagesLauncher.launch("image/*") },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(imageVector = Icons.Filled.Add, contentDescription = "")
+                }
+            }
+        }
+        items(selectedImages.value.size) { index ->
+            val uri = selectedImages.value[index]
+            Box(
+                modifier = Modifier
+                    .padding(4.dp)
+                    .width(100.dp)
+                    .height(100.dp)
+                    .border(
+                        1.dp,
+                        Color.Transparent,
+                        shape = RoundedCornerShape(10.dp),
+                    )
+                    .background(
+                        Color.White,
+                        shape = RoundedCornerShape(10.dp),
+                    )
+                    .clickable { selectedImages.value -= uri },
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = uri,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(10.dp))
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun SimpleTextInput(
+    inputValue: MutableState<String>,
+    inputText: String,
+){
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+            .border(
+                1.dp,
+                Color.Transparent,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .background(
+                Color.White,
+                shape = RoundedCornerShape(10.dp)
+            )
+    ){
+        OutlinedTextField(
+            value = inputValue.value,
+            onValueChange = { newValue ->
+                inputValue.value = newValue
+            },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = {
+                Text(
+                    text = inputText,
+                    style = TextStyle(
+                        color = greyTextColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+            )
+        )
+    }
+}
+
+@Composable
+fun Attendance(
+    selected: MutableState<Int>
+){
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(30.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Surface(
+            if(selected.value == 1)
+                Modifier.background(greyTextColor, shape = RoundedCornerShape(10.dp)).padding(10.dp)
+            else
+                Modifier.background(Color.Transparent).padding(10.dp)
+        ) {
+            Image(
+                modifier =  if(selected.value == 1)
+                    Modifier.background(greyTextColor)
+                else
+                    Modifier.background(Color.Transparent)
+                .clickable { selected.value = 1 },
+                painter = painterResource(id = R.drawable.person_maincolor_1),
+                contentDescription = ""
+            )
+        }
+        Surface(
+            if(selected.value == 2)
+                Modifier.background(greyTextColor, shape = RoundedCornerShape(10.dp)).padding(10.dp)
+            else
+                Modifier.background(Color.Transparent).padding(10.dp)
+        ) {
+            Image(
+                modifier = if(selected.value == 2)
+                    Modifier.background(greyTextColor)
+                else
+                    Modifier.background(Color.Transparent)
+                .clickable { selected.value = 2 },
+                painter = painterResource(id = R.drawable.person_maincolor_2),
+                contentDescription = ""
+            )
+        }
+        Surface(
+            if(selected.value == 3)
+                Modifier.background(greyTextColor, shape = RoundedCornerShape(10.dp)).padding(10.dp)
+            else
+                Modifier.background(Color.Transparent).padding(10.dp)
+        ) {
+            Image(
+                modifier =  if(selected.value == 3)
+                                Modifier.background(greyTextColor)
+                            else
+                                Modifier.background(Color.Transparent)
+                .clickable { selected.value = 3 },
+                painter = painterResource(id = R.drawable.person_maincolor_3),
+                contentDescription = ""
+            )
+        }
+    }
+}
+
+@Composable
+fun TextArea(
+    inputValue: MutableState<String>,
+    inputText: String,
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp)
+            .border(
+                1.dp,
+                mainColor,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .background(
+                Color.White,
+                shape = RoundedCornerShape(10.dp)
+            )
+    ) {
+        OutlinedTextField(
+            value = inputValue.value,
+            onValueChange = { newValue ->
+                inputValue.value = newValue
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp),
+            placeholder = {
+                Text(
+                    text = inputText,
+                    style = TextStyle(
+                        color = greyTextColor,
+                        fontWeight = FontWeight.Medium
+                    )
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+            ),
+            keyboardOptions = KeyboardOptions.Default
+        )
+    }
 }

@@ -124,14 +124,24 @@ fun IndexScreen(
                     )
                 }
             }
-            Button(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = {
-                    viewModel.logout()
-                    navController.navigate(route = Routes.loginScreen)
+            Column {
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        viewModel.logout()
+                        navController.navigate(route = Routes.loginScreen)
+                    }
+                ) {
+                    Text(text = "Logout")
                 }
-            ) {
-                Text(text = "Logout")
+                Button(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        navController.navigate(route = Routes.addPlaceScreen+"/${myLocation.value!!.latitude}/${myLocation.value!!.longitude}")
+                    }
+                ) {
+                    Text(text = "+")
+                }
             }
         }
     }
