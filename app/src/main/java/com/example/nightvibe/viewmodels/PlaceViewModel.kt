@@ -61,11 +61,3 @@ class PlaceViewModel : ViewModel() {
     }
 }
 
-class PlaceViewModelFactory: ViewModelProvider.Factory{
-    override fun <T: ViewModel> create(modelClass: Class<T>): T{
-        if(modelClass.isAssignableFrom(PlaceViewModel::class.java)){
-            return PlaceViewModel() as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
-    }
-}

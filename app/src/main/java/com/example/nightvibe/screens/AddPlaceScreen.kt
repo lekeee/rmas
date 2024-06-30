@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.nightvibe.navigation.Routes
 import com.example.nightvibe.repositories.Resource
 import com.example.nightvibe.screens.components.Attendance
 import com.example.nightvibe.screens.components.GalleryForPlace
@@ -62,6 +63,10 @@ fun AddPlaceScreen(
         mutableStateOf(false)
     }
 
+    val isAdded = remember {
+        mutableStateOf(false)
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -82,7 +87,8 @@ fun AddPlaceScreen(
             item{ GalleryForPlace(selectedImages = selectedImages)}
             item{ Spacer(modifier = Modifier.height(10.dp))}
             item{
-                LoginRegisterButton(icon = Icons.Filled.Add ,buttonText = "Dodaj mesto", isEnabled = buttonIsEnabled, isLoading = buttonIsLoading,) {
+                LoginRegisterButton(icon = Icons.Filled.Add ,buttonText = "Dodaj mesto", isEnabled = buttonIsEnabled, isLoading = buttonIsLoading) {
+                    isAdded.value = true
                 buttonIsLoading.value = true
                 placeViewModel?.savePlace(
                     name = name.value,
@@ -111,7 +117,8 @@ fun AddPlaceScreen(
             is Resource.Success -> {
                 Log.d("Stanje flowa", it.toString())
                 buttonIsLoading.value = false
-                navController.popBackStack()
+                if(isAdded.value)
+                    navController.navigate(Routes.indexScreen)
             }
             null -> {}
         }

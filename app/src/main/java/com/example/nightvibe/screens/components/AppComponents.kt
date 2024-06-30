@@ -32,6 +32,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -65,14 +68,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowInsetsAnimationCompat.BoundsCompat
 import coil.compose.AsyncImage
 import com.example.nightvibe.R
 import com.example.nightvibe.ui.theme.buttonDisabledColor
+import com.example.nightvibe.ui.theme.goldColor
 import com.example.nightvibe.ui.theme.greyTextColor
 import com.example.nightvibe.ui.theme.mainColor
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.FeatureClickEvent
+import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun Heading1Text(textValue: String){
@@ -680,48 +686,63 @@ fun Attendance(
     ) {
         Surface(
             if(selected.value == 1)
-                Modifier.background(greyTextColor, shape = RoundedCornerShape(10.dp)).padding(10.dp)
+                Modifier
+                    .background(greyTextColor, shape = RoundedCornerShape(10.dp))
+                    .padding(10.dp)
             else
-                Modifier.background(Color.Transparent).padding(10.dp)
+                Modifier
+                    .background(Color.Transparent)
+                    .padding(10.dp)
         ) {
             Image(
                 modifier =  if(selected.value == 1)
                     Modifier.background(greyTextColor)
                 else
-                    Modifier.background(Color.Transparent)
-                .clickable { selected.value = 1 },
+                    Modifier
+                        .background(Color.Transparent)
+                        .clickable { selected.value = 1 },
                 painter = painterResource(id = R.drawable.person_maincolor_1),
                 contentDescription = ""
             )
         }
         Surface(
             if(selected.value == 2)
-                Modifier.background(greyTextColor, shape = RoundedCornerShape(10.dp)).padding(10.dp)
+                Modifier
+                    .background(greyTextColor, shape = RoundedCornerShape(10.dp))
+                    .padding(10.dp)
             else
-                Modifier.background(Color.Transparent).padding(10.dp)
+                Modifier
+                    .background(Color.Transparent)
+                    .padding(10.dp)
         ) {
             Image(
                 modifier = if(selected.value == 2)
                     Modifier.background(greyTextColor)
                 else
-                    Modifier.background(Color.Transparent)
-                .clickable { selected.value = 2 },
+                    Modifier
+                        .background(Color.Transparent)
+                        .clickable { selected.value = 2 },
                 painter = painterResource(id = R.drawable.person_maincolor_2),
                 contentDescription = ""
             )
         }
         Surface(
             if(selected.value == 3)
-                Modifier.background(greyTextColor, shape = RoundedCornerShape(10.dp)).padding(10.dp)
+                Modifier
+                    .background(greyTextColor, shape = RoundedCornerShape(10.dp))
+                    .padding(10.dp)
             else
-                Modifier.background(Color.Transparent).padding(10.dp)
+                Modifier
+                    .background(Color.Transparent)
+                    .padding(10.dp)
         ) {
             Image(
                 modifier =  if(selected.value == 3)
                                 Modifier.background(greyTextColor)
                             else
-                                Modifier.background(Color.Transparent)
-                .clickable { selected.value = 3 },
+                    Modifier
+                        .background(Color.Transparent)
+                        .clickable { selected.value = 3 },
                 painter = painterResource(id = R.drawable.person_maincolor_3),
                 contentDescription = ""
             )
@@ -773,3 +794,191 @@ fun TextArea(
         )
     }
 }
+
+@Composable
+fun PlaceLogoImage(
+    imageUrl: String
+){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 20.dp), contentAlignment = Alignment.Center){
+        Box(
+            contentAlignment = Alignment.TopEnd
+        ){
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "",
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(200.dp)
+                    .border(
+                        1.dp,
+                        Color.Gray,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+                    .shadow(
+                        6.dp,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+                    .clip(shape = RoundedCornerShape(100.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Text(
+                modifier = Modifier
+                    .background(
+                        goldColor,
+                        shape = RoundedCornerShape(5.dp)
+                    )
+                    .padding(10.dp),
+                text = "9.8/10",
+                color = Color.Black,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+
+    }
+}
+
+@Composable
+fun BackButton(
+    onClick: () -> Unit
+){
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .background(
+                Color.Transparent,
+                RoundedCornerShape(5.dp)
+            )
+            .padding(0.dp)
+    ) {
+        Icon(
+            imageVector = Icons.Filled.ArrowBackIosNew,
+            contentDescription = ""
+        )
+    }
+}
+
+@Composable
+fun LocationView(
+    location: LatLng
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Filled.LocationOn,
+            contentDescription = "",
+            tint = mainColor
+        )
+
+        Text(style = TextStyle(
+            color = greyTextColor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center
+        ),
+            text = "${location.latitude}, ${location.longitude}"
+        )
+    }
+}
+
+@Composable
+fun AttendanceView(
+    value: Int
+){
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if(value == 1) {
+            Image(
+                painter = painterResource(id = R.drawable.person_maincolor_1),
+                contentDescription = ""
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            GreyText(textValue = "Posecenost 100-200 ljudi")
+        }
+        if(value == 2) {
+            Image(
+                painter = painterResource(id = R.drawable.person_maincolor_2),
+                contentDescription = ""
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            GreyText(textValue = "Posecenost 200-1000 ljudi ")
+        }
+        if(value == 3) {
+            Image(
+                painter = painterResource(id = R.drawable.person_maincolor_3),
+                contentDescription = ""
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            GreyText(textValue = "Posecenost 1000-4000 ljudi ")
+        }
+        Spacer(modifier = Modifier.width(20.dp))
+    }
+}
+
+@Composable
+fun PlaceImagesView(
+    images: List<String>
+){
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        for (index in images.indices step 2) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                AsyncImage(
+                    model = images[index],
+                    contentDescription = "",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(170.dp)
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                if (index + 1 < images.size) {
+                    AsyncImage(
+                        model = images[index + 1],
+                        contentDescription = "",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(170.dp)
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(5.dp))
+
+        }
+    }
+}
+
+@Composable
+fun MarkButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    name: String
+){
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = mainColor,
+            contentColor = Color.Black,
+            disabledContainerColor = buttonDisabledColor,
+            disabledContentColor = Color.White
+        ),
+        modifier = Modifier
+                .fillMaxWidth()
+            .height(60.dp)
+            .background(mainColor, RoundedCornerShape(30.dp)),
+
+        ) {
+        Text(
+            "Oceni ${name.replace("+", " ")}",
+            style = TextStyle(
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+        )
+    }
+}
+

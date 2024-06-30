@@ -1,5 +1,6 @@
 package com.example.nightvibe.services
 
+import com.example.nightvibe.models.Mark
 import com.example.nightvibe.models.Place
 import com.example.nightvibe.models.User
 import com.example.nightvibe.repositories.Resource
@@ -81,4 +82,30 @@ class DatabaseService(
             Resource.Failure(e)
         }
     }
+    suspend fun saveMark(
+        mark: Mark
+    ): Resource<String>{
+        return try{
+            val result = firestore.collection("marks").add(mark).await()
+            Resource.Success(result.id)
+        }catch(e: Exception){
+            e.printStackTrace()
+            Resource.Failure(e)
+        }
+    }
+
+    suspend fun updateMark(
+        markId: String,
+        mark: Int
+    ) : Resource<String>{
+        return try{
+            val documentRef = firestore.collection("marks").document(markId)
+            documentRef.update("mark", mark).await()
+            Resource.Success(markId)
+        }catch(e: Exception){
+            e.printStackTrace()
+            Resource.Failure(e)
+        }
+    }
 }
+

@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,12 +26,16 @@ import androidx.compose.ui.unit.dp
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.navigation.NavController
 import com.example.nightvibe.R
+import com.example.nightvibe.models.Place
 import com.example.nightvibe.navigation.Routes
+import com.example.nightvibe.repositories.Resource
 import com.example.nightvibe.screens.components.myPositionIndicator
 import com.example.nightvibe.services.LocationService
 import com.example.nightvibe.viewmodels.AuthViewModel
+import com.example.nightvibe.viewmodels.PlaceViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.Gson
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
@@ -40,6 +45,8 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.maps.android.compose.rememberMarkerState
 import com.google.maps.android.ktx.model.cameraPosition
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @Composable
@@ -51,7 +58,10 @@ fun IndexScreen(
     },
     isCameraSet: MutableState<Boolean> = remember {
         mutableStateOf(false)
-}){
+    },
+    placeViewModel: PlaceViewModel,
+    placesMarkers: MutableList<Place>
+){
     val markers = remember { mutableStateListOf<LatLng>() }
     val properties = remember {
         mutableStateOf(MapProperties(mapType = MapType.TERRAIN))
@@ -60,6 +70,26 @@ fun IndexScreen(
 
     val myLocation = remember {
         mutableStateOf<LatLng?>(null)
+    }
+
+    val placesData = placeViewModel.places.collectAsState()
+    val allPlaces = remember {
+        mutableListOf<Place>()
+    }
+    placesData.value.let {
+        when(it){
+            is Resource.Success -> {
+                allPlaces.clear()
+                allPlaces.addAll(it.result)
+            }
+            is Resource.loading -> {
+
+            }
+            is Resource.Failure -> {
+                Log.e("Podaci", it.toString())
+            }
+            null -> {}
+        }
     }
 
     val receiver = remember {
@@ -79,6 +109,10 @@ fun IndexScreen(
     }
 
     val context = LocalContext.current
+
+    val filtersOn = remember {
+        mutableStateOf(false)
+    }
 
     DisposableEffect(context) {
         LocalBroadcastManager.getInstance(context)
@@ -122,6 +156,34 @@ fun IndexScreen(
                         icon = icon,
                         snippet = "",
                     )
+                }
+                if(!filtersOn.value){
+                    placesMarkers.forEach{
+                        place ->
+                        val icon = myPositionIndicator(
+                            context, R.drawable.beverage_cocktail
+                        )
+                        Marker(
+                            state = rememberMarkerState(position = LatLng(place.location.latitude, place.location.longitude)),
+                            title = place.name,
+                            icon = icon,
+                            snippet = place.description,
+                            onClick = {
+                                val isCameraSet = true
+                                val latitude = place.location.latitude
+                                val longitude = place.location.longitude
+
+                                val placeJson = Gson().toJson(place)
+                                val encodedPlaceJson =
+                                    URLEncoder.encode(placeJson, StandardCharsets.UTF_8.toString())
+
+                                val placesJson = Gson().toJson(placesMarkers)
+                                val encodedPlacesJson = URLEncoder.encode(placesJson, StandardCharsets.UTF_8.toString())
+                                navController.navigate(Routes.placeScreen + "/$encodedPlaceJson/$encodedPlacesJson")
+                                true
+                            }
+                        )
+                    }
                 }
             }
             Column {

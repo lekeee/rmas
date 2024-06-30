@@ -5,4 +5,5 @@ object Routes {
     val registerScreen = "registerScreen"
     val indexScreen = "indexScreen"
     val addPlaceScreen = "addPlaceScreen"
+    val placeScreen = "placeScreen"
 }
