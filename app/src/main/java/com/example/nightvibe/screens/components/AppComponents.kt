@@ -3,8 +3,6 @@ package com.example.nightvibe.screens.components
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
-import android.util.Log
-import android.widget.Space
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -31,11 +29,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddAPhoto
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.LockOpen
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
@@ -68,7 +63,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
-import androidx.core.view.WindowInsetsAnimationCompat.BoundsCompat
 import coil.compose.AsyncImage
 import com.example.nightvibe.R
 import com.example.nightvibe.ui.theme.buttonDisabledColor
@@ -77,8 +71,8 @@ import com.example.nightvibe.ui.theme.greyTextColor
 import com.example.nightvibe.ui.theme.mainColor
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.FeatureClickEvent
 import com.google.android.gms.maps.model.LatLng
+
 
 @Composable
 fun Heading1Text(textValue: String){
@@ -797,7 +791,8 @@ fun TextArea(
 
 @Composable
 fun PlaceLogoImage(
-    imageUrl: String
+    imageUrl: String,
+    averageMark: MutableState<Double>
 ){
     Box(modifier = Modifier
         .fillMaxWidth()
@@ -830,7 +825,7 @@ fun PlaceLogoImage(
                         shape = RoundedCornerShape(5.dp)
                     )
                     .padding(10.dp),
-                text = "9.8/10",
+                text = "${averageMark.value}/10",
                 color = Color.Black,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold
@@ -967,7 +962,7 @@ fun MarkButton(
             disabledContentColor = Color.White
         ),
         modifier = Modifier
-                .fillMaxWidth()
+            .fillMaxWidth()
             .height(60.dp)
             .background(mainColor, RoundedCornerShape(30.dp)),
 
@@ -981,4 +976,76 @@ fun MarkButton(
         )
     }
 }
+
+@Composable
+fun UserImage(
+    imageUrl: String,
+    name: String,
+    score: Int
+){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 20.dp), contentAlignment = Alignment.Center){
+        Row {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "userimage",
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(100.dp)
+                    .border(
+                        3.dp,
+                        Color.Gray,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+                    .shadow(
+                        6.dp,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+                    .clip(shape = RoundedCornerShape(100.dp)),
+                contentScale = ContentScale.Crop
+            )
+            Spacer(modifier = Modifier.width(40.dp))
+            Column {
+                Text(
+                    modifier = Modifier
+                        .background(
+                            goldColor,
+                            shape = RoundedCornerShape(5.dp)
+                        )
+                        .padding(10.dp),
+                    text = name.replace(","," "),
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(text = "Titula:")
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        style = TextStyle(
+                        color = greyTextColor,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.Center
+                    ),
+                        text = if(score < 30){
+                            "Ne pije"
+                        }
+                        else if(score in 31..59){
+                            "Moze da popije"
+                        }
+                        else{
+                            "Postaje nevidljiv"
+                        }
+                    )
+                }
+            }
+        }
+    }
+}
+
 

@@ -3,6 +3,7 @@ package com.example.nightvibe.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,16 +11,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -35,8 +39,9 @@ import com.example.nightvibe.ui.theme.mainColor
 fun AddMarkScreen(
     showMarkSreen: MutableState<Boolean>,
     isLoading: MutableState<Boolean>,
-    mark: Int,
-    onClick: () -> Unit
+    mark: MutableState<String>,
+    onClick: () -> Unit,
+
 ) {
     val interactionSource = remember {
         MutableInteractionSource()
@@ -72,8 +77,23 @@ fun AddMarkScreen(
                             )
                         )
                         Spacer(modifier = Modifier.height(40.dp))
-                        Row {
-                            OutlinedTextField(value = mark.toString(), onValueChange = {newValue -> newMark.value = newValue})
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            OutlinedTextField(
+                                modifier = Modifier.width(70.dp),
+                                value = mark.value,
+                                onValueChange = {newValue ->
+                                    mark.value = newValue
+                                },
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    focusedBorderColor = Color.Transparent,
+                                    unfocusedBorderColor = Color.Transparent,
+                                ),
+                                singleLine = true
+                            )
                             Text(text = "/ 10")
                         }
                         Button(
@@ -104,24 +124,26 @@ fun AddMarkScreen(
                                 )
                             }
                             Spacer(modifier = Modifier.height(15.dp))
-                            Text(
-                                text = "Zatvori",
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    )
-                                    {
-                                        showMarkSreen.value = false
-                                    },
-                                style = TextStyle(
-                                    fontSize = 14.sp,
-                                    color = greyTextColor,
-                                    textAlign = TextAlign.Center
-                                )
-                            )
                         }
+                        Spacer(modifier = Modifier.height(15.dp))
+                        Text(
+                            text = "Zatvori",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable(
+                                    interactionSource = interactionSource,
+                                    indication = null
+                                )
+                                {
+                                    showMarkSreen.value = false
+                                    isLoading.value = false
+                                },
+                            style = TextStyle(
+                                fontSize = 20.sp,
+                                color = greyTextColor,
+                                textAlign = TextAlign.Center
+                            )
+                        )
                     }
                 }
             }

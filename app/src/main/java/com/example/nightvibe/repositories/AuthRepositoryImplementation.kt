@@ -62,10 +62,52 @@ class AuthRepositoryImplementation : AuthRepository {
     }
 
     override suspend fun getUser(): Resource<User> {
-        TODO("Not yet implemented")
+        return try {
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            if (currentUser != null) {
+                val uid = currentUser.uid
+
+                val db = FirebaseFirestore.getInstance()
+
+                val userDocRef = db.collection("users").document(uid)
+                val userSnapshot = userDocRef.get().await()
+
+                if (userSnapshot.exists()) {
+                    val customUser = userSnapshot.toObject(User::class.java)
+                    if (customUser != null) {
+                        Resource.Success(customUser)
+                    } else {
+                        Resource.Failure(Exception("Neuspešno mapiranje dokumenta na CustomUser"))
+                    }
+                } else {
+                    Resource.Failure(Exception("Korisnikov dokument ne postoji"))
+                }
+            } else {
+                Resource.Failure(Exception("Nema trenutnog korisnika"))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Failure(e)
+        }
     }
 
     override suspend fun getAllUsers(): Resource<List<User>> {
-        TODO("Not yet implemented")
+        return try {
+            val db = FirebaseFirestore.getInstance()
+            val usersCollectionRef = db.collection("users")
+            val usersSnapshot = usersCollectionRef.get().await()
+
+            if (!usersSnapshot.isEmpty) {
+                val usersList = usersSnapshot.documents.mapNotNull { document ->
+                    document.toObject(User::class.java)
+                }
+                Resource.Success(usersList)
+            } else {
+                Resource.Failure(Exception("Nema korisnika u bazi podataka"))
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Resource.Failure(e)
+        }
     }
 }

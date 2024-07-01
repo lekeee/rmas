@@ -114,6 +114,8 @@ fun Router(authVM : AuthViewModel, placeVM : PlaceViewModel){
             val placeJson = backStackEntry.arguments?.getString("place")
             val place = Gson().fromJson(placeJson, Place::class.java)
 
+            placeVM.getPlaceMarks(place.id)
+
             PlaceScreen(
                 navController = navController,
                 placeViewModel = placeVM,

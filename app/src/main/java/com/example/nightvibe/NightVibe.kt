@@ -24,7 +24,7 @@ fun NightVibe(authViewModel: AuthViewModel, placeViewModel: PlaceViewModel){
 
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
-    val isTrackingServiceEnabled = sharedPreferences.getBoolean("tracking_location", true)
+    val isFollowingServiceEnabled = sharedPreferences.getBoolean("following_location", true)
 
     if (ActivityCompat.checkSelfPermission(
             context,
@@ -43,7 +43,7 @@ fun NightVibe(authViewModel: AuthViewModel, placeViewModel: PlaceViewModel){
             1
         )
     } else {
-        if(isTrackingServiceEnabled) {
+        if(isFollowingServiceEnabled) {
             Intent(context, LocationService::class.java).apply {
                 action = LocationService.ACTION_FIND_NEARBY
                 context.startForegroundService(this)

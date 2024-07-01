@@ -5,7 +5,10 @@ import androidx.compose.runtime.MutableState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.nightvibe.models.Mark
 import com.example.nightvibe.models.Place
+import com.example.nightvibe.repositories.MarkRepository
+import com.example.nightvibe.repositories.MarkRepositoryImplementation
 import com.example.nightvibe.repositories.PlaceRepositoryImplementation
 import com.example.nightvibe.repositories.Resource
 import com.google.android.gms.maps.model.LatLng
@@ -27,6 +30,12 @@ class PlaceViewModel : ViewModel() {
 
     private val _userPlaces = MutableStateFlow<Resource<List<Place>>>(Resource.Success(emptyList()))
     val userPlaces: StateFlow<Resource<List<Place>>> get() = _userPlaces
+
+    private val _newMark = MutableStateFlow<Resource<String>?>(null)
+    val newMark: StateFlow<Resource<String>?> = _newMark
+
+    private val _marks = MutableStateFlow<Resource<List<Mark>>>(Resource.Success(emptyList()))
+    val marks: StateFlow<Resource<List<Mark>>> get() = _marks
 
     fun getAllPlaces() = viewModelScope.launch {
         _places.value = repository.getAllPlaces()
@@ -59,5 +68,31 @@ class PlaceViewModel : ViewModel() {
         )
         _placeFlow.value = Resource.Success("Uspesno dodato mesto")
     }
+
+    val markRepository = MarkRepositoryImplementation()
+
+    fun addMark(
+        placeId: String,
+        mark: Int,
+        place: Place
+    ) = viewModelScope.launch {
+        _newMark.value = markRepository.addMark(placeId, mark, place)
+    }
+
+    fun updateMark(
+        markId: String,
+        mark: Int
+    ) = viewModelScope.launch{
+        _newMark.value = markRepository.updateMark(markId, mark)
+    }
+
+    fun getPlaceMarks(
+        placeId: String
+    ) = viewModelScope.launch{
+        _marks.value = Resource.loading
+        val result = markRepository.getMarks(placeId)
+        _marks.value = result
+    }
+
 }
 
