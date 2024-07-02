@@ -11,16 +11,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.nightvibe.models.Place
+import com.example.nightvibe.models.User
 import com.example.nightvibe.repositories.Resource
 import com.example.nightvibe.screens.AddPlaceScreen
 import com.example.nightvibe.screens.IndexScreen
 import com.example.nightvibe.screens.LoginScreen
 import com.example.nightvibe.screens.PlaceScreen
+import com.example.nightvibe.screens.PlacesScreen
+import com.example.nightvibe.screens.RangListScreen
 import com.example.nightvibe.screens.RegisterScreen
+import com.example.nightvibe.screens.UserScreen
 import com.example.nightvibe.viewmodels.AuthViewModel
 import com.example.nightvibe.viewmodels.PlaceViewModel
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 import com.google.maps.android.compose.rememberCameraPositionState
 
@@ -102,6 +107,24 @@ fun Router(authVM : AuthViewModel, placeVM : PlaceViewModel){
             AddPlaceScreen(placeViewModel = placeVM, location = location, navController)
         }
         composable(
+            route = Routes.placeScreen + "/{place}",
+            arguments = listOf(
+                navArgument("place"){ type = NavType.StringType }
+            )
+        ){
+            backStackEntry ->
+            val placeJson = backStackEntry.arguments?.getString("place")
+            val place = Gson().fromJson(placeJson, Place::class.java)
+            placeVM.getPlaceMarks(place.id)
+            PlaceScreen(
+                navController = navController,
+                placeViewModel = placeVM,
+                authViewModel = authVM,
+                place = place,
+                places = null
+            )
+        }
+        composable(
             route = Routes.placeScreen + "/{place}/{places}",
             arguments = listOf(
                 navArgument("place"){ type = NavType.StringType },
@@ -123,6 +146,34 @@ fun Router(authVM : AuthViewModel, placeVM : PlaceViewModel){
                 place = place,
                 places = places.toMutableList()
             )
+        }
+        composable(
+            route = Routes.userScreen + "/{user}",
+            arguments = listOf(navArgument("user"){
+                type = NavType.StringType
+            })
+        ){
+            backStackEntry ->
+            val userDataJson = backStackEntry.arguments?.getString("user")
+            val userData = Gson().fromJson(userDataJson, User::class.java)
+
+            UserScreen(
+                navController = navController,
+                placeViewModel = placeVM,
+                user = userData
+            )
+        }
+        composable(
+            route = Routes.placesScreen + "/{places}",
+            arguments = listOf(navArgument("places") { type = NavType.StringType })
+        ){
+            backStackEntry ->
+            val placesJson = backStackEntry.arguments?.getString("places")
+            val places = Gson().fromJson(placesJson, Array<Place>::class.java).toList()
+            PlacesScreen(places = places, navController = navController, placeViewModel = placeVM)
+        }
+        composable(Routes.rangListScreen){
+            RangListScreen(viewModel = authVM, navController = navController)
         }
     }
 }

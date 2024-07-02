@@ -6,4 +6,7 @@ object Routes {
     val indexScreen = "indexScreen"
     val addPlaceScreen = "addPlaceScreen"
     val placeScreen = "placeScreen"
+    val userScreen = "userScreen"
+    val placesScreen = "placesScreen"
+    val rangListScreen = "rangListScreen"
 }

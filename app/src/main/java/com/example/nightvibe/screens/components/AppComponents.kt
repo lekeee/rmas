@@ -30,9 +30,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.ShareLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -44,6 +46,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -63,15 +66,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.nightvibe.R
+import com.example.nightvibe.models.Place
+import com.example.nightvibe.navigation.Routes
 import com.example.nightvibe.ui.theme.buttonDisabledColor
 import com.example.nightvibe.ui.theme.goldColor
 import com.example.nightvibe.ui.theme.greyTextColor
+import com.example.nightvibe.ui.theme.lightGray
+import com.example.nightvibe.ui.theme.lightMainColor
 import com.example.nightvibe.ui.theme.mainColor
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.gson.Gson
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @Composable
@@ -1048,4 +1059,184 @@ fun UserImage(
     }
 }
 
+@Composable
+fun ProfileImage(
+    imageUrl: String
+){
+    Box(modifier = Modifier
+        .fillMaxWidth()
+        .padding(top = 20.dp), contentAlignment = Alignment.Center){
+        Row {
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = "userimage",
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(200.dp)
+                    .border(
+                        3.dp,
+                        Color.Gray,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+                    .shadow(
+                        6.dp,
+                        shape = RoundedCornerShape(100.dp)
+                    )
+                    .clip(shape = RoundedCornerShape(100.dp)),
+                contentScale = ContentScale.Crop
+            )
+        }
+    }
+}
 
+@Composable
+fun PhotosSection(
+    places: List<Place>,
+    navController: NavController
+) {
+    Column(
+        modifier = Modifier.padding(horizontal = 16.dp)
+    ) {
+        Text(text = "Dodate plaže")
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if(places.isNotEmpty()) {
+                for (place in places) {
+                    item {
+                        AsyncImage(
+                            model = place.logo,
+                            contentScale = ContentScale.Crop,
+                            contentDescription = "",
+                            modifier =
+                            Modifier
+                                .width(150.dp)
+                                .height(150.dp)
+                                .clip(RoundedCornerShape(20.dp))
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(20.dp)
+                                )
+                                .clickable {
+                                    val placeJson = Gson().toJson(place)
+                                    val encodedPlaceJson = URLEncoder.encode(
+                                        placeJson,
+                                        StandardCharsets.UTF_8.toString()
+                                    )
+                                    navController.navigate(Routes.placeScreen + "/$encodedPlaceJson")
+                                }
+                        )
+                    }
+                }
+            }else{
+                item {
+                    Image(
+                        imageVector = Icons.Filled.DoNotDisturb,
+                        contentScale = ContentScale.Crop,
+                        contentDescription = "",
+                        modifier =
+                        Modifier
+                            .width(150.dp)
+                            .height(150.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(
+                                Color.Gray,
+                                RoundedCornerShape(20.dp)
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PlaceRow(
+    place: Place,
+    placeScreen: () -> Unit,
+    placeOnMap: () -> Unit
+){
+    val boxModifier = Modifier.padding(12.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                lightGray,
+                shape = RoundedCornerShape(10.dp)
+
+            )
+            .clickable { placeScreen() }
+            .border(
+                1.dp,
+                mainColor,
+                shape = RoundedCornerShape(10.dp)
+            )
+            .padding(5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.width(60.dp)){
+            AsyncImage(
+                model = place.logo,
+                contentDescription = "",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .height(60.dp)
+                    .clip(RoundedCornerShape(5.dp))
+            )
+        }
+
+        Box(modifier = boxModifier.width(160.dp)) {
+            Text(
+                text = if(place.description.length > 20) place.description.substring(0, 20).replace('+', ' ') + "..." else place.description.replace('+', ' '),
+                style = TextStyle(
+                    fontSize = 16.sp
+                )
+            )
+        }
+        AttendanceForPlaces(
+            selected = place.attendance
+        )
+        IconButton(
+            onClick = placeOnMap,
+        ){
+            Icon(
+                imageVector = Icons.Outlined.ShareLocation,
+                contentDescription = "",
+                tint = goldColor
+            )
+        }
+    }
+}
+
+@Composable
+fun AttendanceForPlaces(
+    selected: Int
+) {
+    Row(
+        modifier = Modifier
+            .width(70.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        when (selected) {
+            1 -> Image(
+                painter = painterResource(id = R.drawable.person_maincolor_1),
+                contentDescription = "",
+                modifier = Modifier.size(20.dp)
+            )
+            2 -> Image(
+                painter = painterResource(id = R.drawable.person_maincolor_2),
+                contentDescription = "",
+                modifier = Modifier.size(40.dp)
+            )
+            3 -> Image(
+                painter = painterResource(id = R.drawable.person_maincolor_3),
+                contentDescription = "",
+                modifier = Modifier.height(20.dp)
+            )
+        }
+    }
+}

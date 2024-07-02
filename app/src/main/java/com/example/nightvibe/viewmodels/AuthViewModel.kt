@@ -55,4 +55,12 @@ class AuthViewModel: ViewModel() {
         val result = repository.getUser()
         _currentUserFlow.value = result
     }
+
+    private val _allUsers = MutableStateFlow<Resource<List<User>>?>(null)
+    val allUsers: StateFlow<Resource<List<User>>?> = _allUsers
+
+    fun getAllUserData() = viewModelScope.launch {
+        val result = repository.getAllUsers()
+        _allUsers.value = result
+    }
 }

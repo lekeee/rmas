@@ -156,6 +156,9 @@ fun IndexScreen(
     val filtersOn = remember {
         mutableStateOf(false)
     }
+    val filteredPlaces = remember {
+        mutableListOf<Place>()
+    }
 
     DisposableEffect(context) {
         LocalBroadcastManager.getInstance(context)
@@ -214,6 +217,9 @@ fun IndexScreen(
                         onClick = {
                             coroutineScope.launch {
                                 drawerState.close()
+                                val userJson = Gson().toJson(user.value)
+                                val encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                                navController.navigate(Routes.userScreen + "/$encodedUserJson")
                             }
                         }
                     )
@@ -224,6 +230,14 @@ fun IndexScreen(
                         onClick = {
                             coroutineScope.launch {
                                 drawerState.close()
+                                val placesJson = Gson().toJson(
+                                    if(filtersOn.value)
+                                        filteredPlaces
+                                    else
+                                        placesMarkers
+                                )
+                                val encodedPlacesJson = URLEncoder.encode(placesJson, StandardCharsets.UTF_8.toString())
+                                navController.navigate(Routes.placesScreen + "/$encodedPlacesJson")
                             }
                         }
                     )
@@ -234,6 +248,7 @@ fun IndexScreen(
                         onClick = {
                             coroutineScope.launch {
                                 drawerState.close()
+                                navController.navigate(Routes.rangListScreen)
                             }
                         }
                     )
