@@ -1,5 +1,6 @@
 package com.example.nightvibe.screens
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -37,11 +38,19 @@ import coil.compose.AsyncImage
 import com.example.nightvibe.R
 import com.example.nightvibe.models.Place
 import com.example.nightvibe.models.User
+import com.example.nightvibe.navigation.Routes
 import com.example.nightvibe.repositories.Resource
+import com.example.nightvibe.screens.components.BackButton
 import com.example.nightvibe.screens.components.GreyText
 import com.example.nightvibe.screens.components.Heading1Text
+import com.example.nightvibe.screens.components.OtherPlacesWidget
+import com.example.nightvibe.screens.components.PlaceWidget
 import com.example.nightvibe.ui.theme.lightYellow
 import com.example.nightvibe.viewmodels.AuthViewModel
+import com.google.gson.Gson
+import okhttp3.internal.notify
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun RangListScreen(
@@ -60,14 +69,19 @@ fun RangListScreen(
 
 
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.White)
-        .padding(12.dp, 20.dp, 20.dp, 20.dp)
-        ){
-        if(allUsers.isNotEmpty()){
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+            .padding(12.dp, 20.dp, 20.dp, 20.dp)
+    ) {
+        if (allUsers.isNotEmpty()) {
             Column {
-                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center){
+                BackButton {
+                    navController?.popBackStack()
+                }
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+
                     Image(
                         painter = painterResource(id = R.drawable.crown),
                         contentDescription = "crown",
@@ -76,281 +90,47 @@ fun RangListScreen(
                 }
                 Heading1Text(textValue = "Top 3 Ranking")
                 Spacer(modifier = Modifier.height(20.dp))
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(250.dp)
-                    .background(
-                        lightYellow,
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                ){
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(250.dp)
+                        .background(
+                            lightYellow,
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        Column(
-                            modifier = Modifier.padding(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.first_place),
-                                contentDescription = "first_place",
-                                modifier = Modifier.size(90.dp)
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Row{
-                                AsyncImage(model = allUsers[0].image, contentDescription = "first_place",modifier = Modifier
-                                    .size(70.dp)
-                                    .clip(CircleShape))
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(text = allUsers[0].fullName.replace("+", " "))
-                            Text(
-                                text = allUsers[0].score.toString() + "xp",
-                                color = Color.Black,
-                                style = TextStyle(fontSize = 10.sp)
-                            )
-                        }
-                        Column(
-                            modifier = Modifier.padding(10.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.second_place),
-                                contentDescription = "first_place",
-                                modifier = Modifier.size(90.dp)
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Row{
-                                AsyncImage(model = allUsers[1].image, contentDescription = "first_place",modifier = Modifier
-                                    .size(70.dp)
-                                    .clip(CircleShape))
-                            }
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(text = allUsers[1].fullName.replace("+", " "))
-                            Text(
-                                text = allUsers[1].score.toString() + "xp",
-                                color = Color.Black,
-                                style = TextStyle(fontSize = 10.sp)
-                            )
-                        }
-//                    Column(
-//                        modifier = Modifier.padding(10.dp),
-//                        horizontalAlignment = Alignment.CenterHorizontally
-//                    ) {
-//                        Image(
-//                            painter = painterResource(id = R.drawable.second_place),
-//                            contentDescription = "first_place",
-//                            modifier = Modifier.size(90.dp)
-//                        )
-//                        Spacer(modifier = Modifier.height(20.dp))
-//                        Row{
-//                            AsyncImage(model = allUsers[2].image, contentDescription = "first_place",modifier = Modifier
-//                                .size(70.dp)
-//                                .clip(CircleShape))
-//                        }
-//                        Spacer(modifier = Modifier.height(10.dp))
-//                        Text(text = allUsers[2].fullName.replace("+", " "))
-//                        Text(
-//                            text = allUsers[2].score.toString(),
-//                            color = Color.Black,
-//                            style = TextStyle(fontSize = 10.sp)
-//                        )
-//                    }
-                    }
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Box(modifier = Modifier
-                    .fillMaxWidth()
-                    .border(
-                        3.dp,
-                        lightYellow,
-                        shape = RoundedCornerShape(20.dp)
-                    )
-                ){
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp, 20.dp, 20.dp, 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Text(text = "1", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp))
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.logo),
-                                contentDescription = "first_place",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Aleksa")
-                            Spacer(modifier = Modifier.width(40.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "40 xp",
-                                    color = Color.Black,
-                                    style = TextStyle(fontSize = 12.sp)
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp, 0.dp, 20.dp, 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Text(text = "2", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp))
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.logo),
-                                contentDescription = "first_place",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Aleksa")
-                            Spacer(modifier = Modifier.width(40.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "40 xp",
-                                    color = Color.Black,
-                                    style = TextStyle(fontSize = 12.sp)
-                                )
-                            }
-                        }
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(20.dp, 0.dp, 20.dp, 20.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ){
-                            Text(text = "3", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp))
-                            Spacer(modifier = Modifier.width(20.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.logo),
-                                contentDescription = "first_place",
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Text(text = "Aleksa")
-                            Spacer(modifier = Modifier.width(40.dp))
-                            Row(
-                                horizontalArrangement = Arrangement.End,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text(
-                                    text = "40 xp",
-                                    color = Color.Black,
-                                    style = TextStyle(fontSize = 12.sp)
-                                )
+                        if (allUsers.size > 0) {
+                            allUsers.forEachIndexed { index, user ->
+                                var icon = 0
+                                if (index in 0..2) {
+                                    when (index) {
+                                        0 -> icon = R.drawable.first_place
+                                        1 -> icon = R.drawable.second_place
+                                        2 -> icon = R.drawable.third_place
+
+                                    }
+                                    PlaceWidget(index = index, user = allUsers[index], icon = icon){
+                                        val userJson = Gson().toJson(user)
+                                        val encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                                        navController?.navigate(Routes.userScreen + "/${encodedUserJson}")
+                                    }
+                                }
                             }
                         }
                     }
                 }
-                Column {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp, 10.dp, 20.dp, 20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text(text = "1", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp))
-                        Spacer(modifier = Modifier.width(20.dp))
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "first_place",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(text = "Aleksa")
-                        Spacer(modifier = Modifier.width(40.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "40 xp",
-                                color = Color.Black,
-                                style = TextStyle(fontSize = 12.sp)
-                            )
-                        }
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp, 0.dp, 20.dp, 20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text(text = "1", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp))
-                        Spacer(modifier = Modifier.width(20.dp))
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "first_place",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(text = "Aleksa")
-                        Spacer(modifier = Modifier.width(40.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "40 xp",
-                                color = Color.Black,
-                                style = TextStyle(fontSize = 12.sp)
-                            )
-                        }
-                    }
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp, 0.dp, 20.dp, 20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ){
-                        Text(text = "1", style = TextStyle(fontWeight = FontWeight.Bold, fontSize = 20.sp))
-                        Spacer(modifier = Modifier.width(20.dp))
-                        Image(
-                            painter = painterResource(id = R.drawable.logo),
-                            contentDescription = "first_place",
-                            modifier = Modifier
-                                .size(30.dp)
-                                .clip(CircleShape)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text(text = "Aleksa")
-                        Spacer(modifier = Modifier.width(40.dp))
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "40 xp",
-                                color = Color.Black,
-                                style = TextStyle(fontSize = 12.sp)
-                            )
-                        }
-                    }
+                if(allUsers.size > 3){
+                    val otherUsers = allUsers.drop(3)
+                    Log.d("otherusers", otherUsers.toString())
+                    OtherPlacesWidget(users = otherUsers, navController)
                 }
             }
         }
     }
-
     allUsersResource?.value.let {
         when(it){
             is Resource.Failure -> {}

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -70,12 +71,14 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.nightvibe.R
 import com.example.nightvibe.models.Place
+import com.example.nightvibe.models.User
 import com.example.nightvibe.navigation.Routes
 import com.example.nightvibe.ui.theme.buttonDisabledColor
 import com.example.nightvibe.ui.theme.goldColor
 import com.example.nightvibe.ui.theme.greyTextColor
 import com.example.nightvibe.ui.theme.lightGray
 import com.example.nightvibe.ui.theme.lightMainColor
+import com.example.nightvibe.ui.theme.lightYellow
 import com.example.nightvibe.ui.theme.mainColor
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -1237,6 +1240,114 @@ fun AttendanceForPlaces(
                 contentDescription = "",
                 modifier = Modifier.height(20.dp)
             )
+        }
+    }
+}
+
+@Composable
+fun PlaceWidget(
+    index: Int,
+    user: User,
+    icon: Int,
+    onClick: () -> Unit
+){
+    Column(
+        modifier = Modifier.padding(10.dp).clickable {
+            onClick()
+        },
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ){
+        Image(
+            painter = painterResource(id = icon),
+            contentDescription = "${index}_place",
+            modifier = Modifier.size(90.dp)
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Row {
+            AsyncImage(
+                model = user.image,
+                contentDescription = "${index}_place",
+                modifier = Modifier
+                    .size(70.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(text = user.fullName.replace("+", " "))
+        Text(
+            text = user.score.toString() + "xp",
+            color = Color.Black,
+            style = TextStyle(fontSize = 10.sp)
+        )
+    }
+}
+
+@Composable
+fun OtherPlacesWidget(
+    users: List<User>,
+    navController: NavController?
+){
+    val interactionSource = remember { MutableInteractionSource() }
+    Spacer(modifier = Modifier.height(20.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(
+                3.dp,
+                lightYellow,
+                shape = RoundedCornerShape(20.dp)
+            )
+    ) {
+        users.forEachIndexed{
+            index, user ->
+            Column {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp, 20.dp, 20.dp, 20.dp)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null
+                        ) {
+
+                            val userJson = Gson().toJson(user)
+                            val encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                            navController?.navigate(Routes.userScreen + "/${encodedUserJson}")
+                        },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = (index + 3).toString(),
+                        style = TextStyle(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp
+                        )
+                    )
+                    Spacer(modifier = Modifier.width(20.dp))
+                    AsyncImage(
+                        model = user.image,
+                        contentDescription = "${index + 3}_place",
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(text = user.fullName.replace(",", " "))
+                    Spacer(modifier = Modifier.width(40.dp))
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = user.score.toString() + "xp",
+                            color = Color.Black,
+                            style = TextStyle(fontSize = 12.sp)
+                        )
+                    }
+                }
+            }
         }
     }
 }

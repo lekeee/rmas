@@ -152,6 +152,7 @@ class LocationService : Service() {
                 Log.e("LocationService", "Error fetching places", e)
             }
     }
+    //Haversine formula
     private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
         val earthRadius = 6371000.0
 
