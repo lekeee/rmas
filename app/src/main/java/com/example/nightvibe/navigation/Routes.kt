@@ -9,4 +9,5 @@ object Routes {
     val userScreen = "userScreen"
     val placesScreen = "placesScreen"
     val rangListScreen = "rangListScreen"
+    val settingsScreen = "settingsScreen"
 }

@@ -21,15 +21,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.FormatListNumbered
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PeopleAlt
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -62,6 +58,7 @@ import com.example.nightvibe.models.User
 import com.example.nightvibe.navigation.Routes
 import com.example.nightvibe.repositories.Resource
 import com.example.nightvibe.screens.components.LoginRegisterButton
+import com.example.nightvibe.screens.components.SearchBar
 import com.example.nightvibe.screens.components.UserImage
 import com.example.nightvibe.screens.components.myPositionIndicator
 import com.example.nightvibe.services.LocationService
@@ -168,7 +165,6 @@ fun IndexScreen(
         }
     }
 
-
     LaunchedEffect(myLocation.value) {
         myLocation.value?.let{
             if(!isCameraSet.value){
@@ -192,9 +188,14 @@ fun IndexScreen(
         gesturesEnabled.value = drawerState.isOpen
     }
 
+    val inputValue = remember {
+        mutableStateOf("")
+    }
+
     Column(modifier = Modifier
         .fillMaxWidth()
-        .height(100.dp),) {
+        .height(100.dp),)
+    {
         ModalNavigationDrawer(
             drawerState = drawerState,
             gesturesEnabled = gesturesEnabled.value,
@@ -259,6 +260,7 @@ fun IndexScreen(
                         onClick = {
                             coroutineScope.launch {
                                 drawerState.close()
+                                navController.navigate(Routes.settingsScreen)
                             }
                         }
                     )
@@ -332,7 +334,6 @@ fun IndexScreen(
                 Column {
                     Spacer(modifier = Modifier.height(15.dp))
                     Row {
-
                         Spacer(modifier = Modifier.width(15.dp))
                         Box(
                             modifier = Modifier.background(
@@ -365,41 +366,44 @@ fun IndexScreen(
                                 )
                             }
                         }
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.End,
-                            verticalArrangement = Arrangement.Bottom
-                        ) {
+                        Spacer(modifier = Modifier.width(10.dp))
+                        SearchBar(inputValue = inputValue, placesData = placesMarkers, cameraPositionState = cameraPosition, navController = navController)
 
-                            Row {
-                                Box(
-                                    modifier = Modifier.background(
-                                        mainColor,
-                                        shape = RoundedCornerShape(10.dp)
+                    }
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        horizontalAlignment = Alignment.End,
+                        verticalArrangement = Arrangement.Bottom
+                    ) {
+
+                        Row {
+                            Box(
+                                modifier = Modifier.background(
+                                    mainColor,
+                                    shape = RoundedCornerShape(10.dp)
+                                )
+                            ){
+                                IconButton(
+                                    onClick = {
+                                        navController.navigate(route = Routes.addPlaceScreen + "/${myLocation.value!!.latitude}/${myLocation.value!!.longitude}")
+                                    },
+                                    modifier = Modifier
+                                        .width(50.dp)
+                                        .height(50.dp)
+                                        .clip(
+                                            RoundedCornerShape(10.dp)
+                                        ),
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "Add",
+                                        tint = Color.White
                                     )
-                                ){
-                                    IconButton(
-                                        onClick = {
-                                            navController.navigate(route = Routes.addPlaceScreen + "/${myLocation.value!!.latitude}/${myLocation.value!!.longitude}")
-                                        },
-                                        modifier = Modifier
-                                            .width(50.dp)
-                                            .height(50.dp)
-                                            .clip(
-                                                RoundedCornerShape(10.dp)
-                                            ),
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = "Add",
-                                            tint = Color.White
-                                        )
-                                    }
                                 }
-                                Spacer(modifier = Modifier.width(15.dp))
                             }
-                            Spacer(modifier = Modifier.height(15.dp))
+                            Spacer(modifier = Modifier.width(15.dp))
                         }
+                        Spacer(modifier = Modifier.height(15.dp))
                     }
                 }
             }

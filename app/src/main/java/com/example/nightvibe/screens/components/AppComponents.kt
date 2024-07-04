@@ -21,9 +21,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -33,8 +36,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.DoNotDisturb
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.ShareLocation
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -47,16 +52,19 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -68,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import androidx.room.util.query
 import coil.compose.AsyncImage
 import com.example.nightvibe.R
 import com.example.nightvibe.models.Place
@@ -77,13 +86,14 @@ import com.example.nightvibe.ui.theme.buttonDisabledColor
 import com.example.nightvibe.ui.theme.goldColor
 import com.example.nightvibe.ui.theme.greyTextColor
 import com.example.nightvibe.ui.theme.lightGray
-import com.example.nightvibe.ui.theme.lightMainColor
 import com.example.nightvibe.ui.theme.lightYellow
 import com.example.nightvibe.ui.theme.mainColor
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
+import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
+import com.google.maps.android.compose.CameraPositionState
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -1252,9 +1262,11 @@ fun PlaceWidget(
     onClick: () -> Unit
 ){
     Column(
-        modifier = Modifier.padding(10.dp).clickable {
-            onClick()
-        },
+        modifier = Modifier
+            .padding(10.dp)
+            .clickable {
+                onClick()
+            },
         horizontalAlignment = Alignment.CenterHorizontally,
     ){
         Image(
@@ -1312,7 +1324,8 @@ fun OtherPlacesWidget(
                         ) {
 
                             val userJson = Gson().toJson(user)
-                            val encodedUserJson = URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
+                            val encodedUserJson =
+                                URLEncoder.encode(userJson, StandardCharsets.UTF_8.toString())
                             navController?.navigate(Routes.userScreen + "/${encodedUserJson}")
                         },
                     verticalAlignment = Alignment.CenterVertically
@@ -1349,5 +1362,159 @@ fun OtherPlacesWidget(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun SearchBar(
+    inputValue: MutableState<String>,
+    placesData: MutableList<Place>,
+    navController: NavController,
+    cameraPositionState: CameraPositionState
+){
+    val focusRequester = remember{
+        FocusRequester()
+    }
+    val onFocus = remember {
+        mutableStateOf(false)
+    }
+
+    val places = remember {
+        mutableListOf<Place>()
+    }
+
+    places.clear()
+    places.addAll(searchLogic(placesData, inputValue.value).toMutableList())
+
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    Column(
+        modifier = Modifier.width(280.dp)
+    ) {
+        OutlinedTextField(
+            modifier = Modifier
+                .height(50.dp)
+                .focusRequester(focusRequester = focusRequester)
+                .onFocusChanged { focusState ->
+                    onFocus.value = focusState.isFocused
+                }
+                .background(
+                    Color.White,
+                    shape = RoundedCornerShape(10.dp)
+                )
+                .border(
+                    1.dp,
+                    mainColor,
+                    shape = RoundedCornerShape(10.dp)
+                ),
+            value = inputValue.value,
+            onValueChange = { newValue ->
+                inputValue.value = newValue
+                onFocus.value = true
+            },
+            singleLine = true,
+            placeholder = {
+                Text(
+                    text = "Unesite naziv mesta",
+                    style = TextStyle(
+                        color = greyTextColor
+                    )
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Outlined.Search,
+                    contentDescription = "",
+                    tint = mainColor
+                )
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = Color.Transparent,
+                unfocusedBorderColor = Color.Transparent,
+            ),
+            visualTransformation = VisualTransformation.None,
+            keyboardOptions = KeyboardOptions.Default
+        )
+        if(onFocus.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White),
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
+                    for (place in places) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 5.dp)
+                                    .clickable {
+                                        val placeJson = Gson().toJson(place)
+                                        val encodedPlaceJson = URLEncoder.encode(
+                                            placeJson,
+                                            StandardCharsets.UTF_8.toString()
+                                        )
+                                        navController.navigate(Routes.placeScreen + "/$encodedPlaceJson")
+                                    },
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .padding(vertical = 8.dp)
+                                        .weight(1f),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    AsyncImage(
+                                        model = place.logo,
+                                        contentDescription = "",
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .width(40.dp)
+                                            .height(40.dp)
+                                            .clip(RoundedCornerShape(10.dp))
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(text = place.name)
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        onFocus.value = false
+                                        keyboardController?.hide()
+                                        cameraPositionState.position = CameraPosition.fromLatLngZoom(LatLng(place.location.latitude, place.location.longitude), 17f)
+                                    },
+                                    modifier = Modifier.wrapContentWidth()
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.MyLocation,
+                                        contentDescription = "",
+                                        tint = mainColor
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+fun searchLogic(
+    places: MutableList<Place>,
+    inputValue: String
+): List<Place>{
+    val regex = inputValue.split(" ").joinToString(".*"){
+        Regex.escape(it)
+    }.toRegex(RegexOption.IGNORE_CASE)
+
+    return places.filter { place ->
+        regex.containsMatchIn(place.name)
     }
 }

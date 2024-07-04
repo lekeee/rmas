@@ -1,6 +1,8 @@
 package com.example.nightvibe.navigation
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +22,7 @@ import com.example.nightvibe.screens.PlaceScreen
 import com.example.nightvibe.screens.PlacesScreen
 import com.example.nightvibe.screens.RangListScreen
 import com.example.nightvibe.screens.RegisterScreen
+import com.example.nightvibe.screens.SettingsScreen
 import com.example.nightvibe.screens.UserScreen
 import com.example.nightvibe.viewmodels.AuthViewModel
 import com.example.nightvibe.viewmodels.PlaceViewModel
@@ -30,6 +33,7 @@ import com.google.gson.Gson
 import com.google.maps.android.compose.rememberCameraPositionState
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Router(authVM : AuthViewModel, placeVM : PlaceViewModel){
     val navController = rememberNavController();
@@ -174,6 +178,9 @@ fun Router(authVM : AuthViewModel, placeVM : PlaceViewModel){
         }
         composable(Routes.rangListScreen){
             RangListScreen(viewModel = authVM, navController = navController)
+        }
+        composable(Routes.settingsScreen){
+            SettingsScreen(navController = navController)
         }
     }
 }
