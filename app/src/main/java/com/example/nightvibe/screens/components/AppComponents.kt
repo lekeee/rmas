@@ -3,6 +3,7 @@ package com.example.nightvibe.screens.components
 import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -94,6 +95,9 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.gson.Gson
 import com.google.maps.android.compose.CameraPositionState
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberMarkerState
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 
@@ -1389,7 +1393,7 @@ fun SearchBar(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
-        modifier = Modifier.width(280.dp)
+        modifier = Modifier.width(250.dp)
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -1517,4 +1521,51 @@ fun searchLogic(
     return places.filter { place ->
         regex.containsMatchIn(place.name)
     }
+}
+
+@Composable
+fun PlaceMarker(
+    place: Place,
+    icon: BitmapDescriptor?,
+    placesMarkers : MutableList<Place>,
+    navController: NavController,
+    notFiltered: Boolean
+){
+    Log.d("sta stize", place.location.toString())
+    Marker(
+        state = if(notFiltered){
+            rememberMarkerState(
+                position = LatLng(
+                    place.location.latitude,
+                    place.location.longitude
+                ))
+        }
+        else{
+            MarkerState(
+                position = LatLng(
+                    place.location.latitude,
+                    place.location.longitude
+                ))
+        }
+        ,
+        title = place.name,
+        icon = icon,
+        snippet = place.description,
+        onClick = {
+            val placeJson = Gson().toJson(place)
+            val encodedPlaceJson =
+                URLEncoder.encode(
+                    placeJson,
+                    StandardCharsets.UTF_8.toString()
+                )
+
+            val placesJson = Gson().toJson(placesMarkers)
+            val encodedPlacesJson = URLEncoder.encode(
+                placesJson,
+                StandardCharsets.UTF_8.toString()
+            )
+            navController.navigate(Routes.placeScreen + "/$encodedPlaceJson/$encodedPlacesJson")
+            true
+        }
+    )
 }

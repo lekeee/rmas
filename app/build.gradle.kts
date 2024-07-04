@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.play.services.maps)
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.compose.material:material-icons-extended:1.0.0-alpha08")
+    implementation("androidx.compose.material:material:1.6.7")
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("com.google.firebase:firebase-storage:20.2.0")
     implementation("com.google.maps.android:maps-compose:4.4.1")

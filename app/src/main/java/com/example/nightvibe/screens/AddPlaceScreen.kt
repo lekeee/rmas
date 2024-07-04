@@ -119,6 +119,7 @@ fun AddPlaceScreen(
                 buttonIsLoading.value = false
                 if(isAdded.value)
                     navController.navigate(Routes.indexScreen)
+                placeViewModel?.getAllPlaces()
             }
             null -> {}
         }
