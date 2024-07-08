@@ -1393,7 +1393,7 @@ fun SearchBar(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
-        modifier = Modifier.width(250.dp)
+        modifier = Modifier.width(270.dp)
     ) {
         OutlinedTextField(
             modifier = Modifier
@@ -1483,7 +1483,7 @@ fun SearchBar(
                                             .clip(RoundedCornerShape(10.dp))
                                     )
                                     Spacer(modifier = Modifier.width(10.dp))
-                                    Text(text = place.name)
+                                    Text(text = place.name.replace("+", " "))
                                 }
 
                                 IconButton(
