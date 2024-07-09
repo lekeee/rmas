@@ -1114,7 +1114,7 @@ fun PhotosSection(
     Column(
         modifier = Modifier.padding(horizontal = 16.dp)
     ) {
-        Text(text = "Dodate plaže")
+        Text(text = "Sva mesta korisnika")
         Spacer(modifier = Modifier.height(8.dp))
 
         LazyRow(
