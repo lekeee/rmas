@@ -1290,7 +1290,7 @@ fun PlaceWidget(
             )
         }
         Spacer(modifier = Modifier.height(10.dp))
-        Text(text = user.fullName.replace("+", " "))
+        Text(text = user.fullName.split(" ")[0])
         Text(
             text = user.score.toString() + "xp",
             color = Color.Black,
@@ -1504,7 +1504,6 @@ fun SearchBar(
                         }
                     }
                 }
-
             }
         }
     }
